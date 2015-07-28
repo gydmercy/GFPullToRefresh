@@ -139,10 +139,10 @@
 				48B3DDDD1B5D213900CABEC3 /* GFPullToRefreshArrow@2x.png */,
 				48B3DDDE1B5D213900CABEC3 /* GFPullToRefreshContants.h */,
 				48B3DDDF1B5D213900CABEC3 /* GFPullToRefreshContants.m */,
-				48B3DDE01B5D213900CABEC3 /* GFPullToRefreshFooterView.h */,
-				48B3DDE11B5D213900CABEC3 /* GFPullToRefreshFooterView.m */,
 				48B3DDE21B5D213900CABEC3 /* GFPullToRefreshHeaderView.h */,
 				48B3DDE31B5D213900CABEC3 /* GFPullToRefreshHeaderView.m */,
+				48B3DDE01B5D213900CABEC3 /* GFPullToRefreshFooterView.h */,
+				48B3DDE11B5D213900CABEC3 /* GFPullToRefreshFooterView.m */,
 				48B3DDE41B5D213900CABEC3 /* UIScrollView+GFPullToRefresh.h */,
 				48B3DDE51B5D213900CABEC3 /* UIScrollView+GFPullToRefresh.m */,
 			);
@@ -442,6 +442,7 @@
 				48B3DDD71B5D211A00CABEC3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		48B3DDD81B5D211A00CABEC3 /* Build configuration list for PBXNativeTarget "GFPullToRefreshDemoTests" */ = {
 			isa = XCConfigurationList;
@@ -450,6 +451,7 @@
 				48B3DDDA1B5D211A00CABEC3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

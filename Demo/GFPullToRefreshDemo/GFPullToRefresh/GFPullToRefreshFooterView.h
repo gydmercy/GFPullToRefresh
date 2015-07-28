@@ -11,9 +11,9 @@
 
 @interface GFPullToRefreshFooterView : UIView
 
-@property (nonatomic, copy) void (^footerRefreshHandler)(); // 上拉刷新回调
+@property (nonatomic, copy) void (^footerRefreshHandler)(); //!< 上拉刷新回调
 
-- (void)beginRefresh; // 开始刷新
-- (void)endRefresh; // 停止刷新
+- (void)beginRefresh; //!< 开始刷新
+- (void)endRefresh; //!< 停止刷新
 
 @end

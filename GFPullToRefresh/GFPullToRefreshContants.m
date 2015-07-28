@@ -14,7 +14,6 @@ const CGFloat GFPTR_HEIGHT = 64.0f;
 const NSTimeInterval GFPTR_ARROW_DURATION = 0.25;
 const NSTimeInterval GFPTR_INSET_DURATION = 0.4;
 
-
 NSString *const GFPTR_KVO_CONTENTFOFFSET = @"contentOffset";
 NSString *const GFPTR_NSUD_LASTUPDATETIME = @"lastUpdeTime";
 

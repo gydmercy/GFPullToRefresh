@@ -10,15 +10,15 @@
 
 @interface GFPullToRefreshFooterView()
 
-@property (nonatomic, strong) UIScrollView *superview; // 将要添加到的父view
-@property (nonatomic, strong) UIActivityIndicatorView *activityIndicatorView; // 小菊花
-@property (nonatomic, strong) UIImageView *arrowImageView; // 下拉箭头
-@property (nonatomic, strong) UILabel *stateLabel; // 显示状态文字
-@property (nonatomic, assign) UIEdgeInsets superViewContentInset; // 父view的 contentInset  ps：下面使用的_superview.contentInset是实时值
-@property (nonatomic, assign) CGFloat offsetWhenScrollToBottom; // 上拉刷新开始时的 contentOffset
-@property (nonatomic, assign) GFPullToRefreshState state; // 当前状态，用来引出动作
-@property (nonatomic, assign) GFPullToRefreshState currentState; // 当前状态，用来判断
-@property (nonatomic, assign) BOOL arrowUp; // 判断箭头是否朝上
+@property (nonatomic, strong) UIScrollView *superview; //!< 将要添加到的父view
+@property (nonatomic, strong) UIActivityIndicatorView *activityIndicatorView; //!< 小菊花
+@property (nonatomic, strong) UIImageView *arrowImageView; //!< 下拉箭头
+@property (nonatomic, strong) UILabel *stateLabel; //!< 显示状态文字
+@property (nonatomic, assign) UIEdgeInsets superViewContentInset; //!< 父view的 contentInset
+@property (nonatomic, assign) CGFloat offsetWhenScrollToBottom; //!< 上拉刷新开始时的 contentOffset
+@property (nonatomic, assign) GFPullToRefreshState state; //!< 当前状态，用来引出动作
+@property (nonatomic, assign) GFPullToRefreshState currentState; //!< 当前状态，用来判断
+@property (nonatomic, assign) BOOL arrowUp; //!< 判断箭头是否朝上
 
 @end
 
@@ -51,6 +51,11 @@
     [newSuperview addObserver:self forKeyPath:GFPTR_KVO_CONTENTFOFFSET options:NSKeyValueObservingOptionNew context:nil];
 }
 
+- (void)dealloc {
+    // 移除 KVO 监听
+    [_superview removeObserver:self forKeyPath:GFPTR_KVO_CONTENTFOFFSET context:nil];
+}
+
 - (void)observeValueForKeyPath:(NSString *)keyPath
                       ofObject:(id)object
                         change:(NSDictionary *)change
@@ -65,6 +70,7 @@
         UIScrollView *obj = (UIScrollView *)object;
         CGFloat scrollViewContentOffsetY = obj.contentOffset.y;
         
+        
         // 下拉判断逻辑，要比较上拉时 contentOffset 的高度与正常状况下 拉到内容底时的 contentOffset
         // 要从 normal 状态进入 refreshing 状态必须要经过 pulling 状态
 
@@ -73,21 +79,18 @@
             // 如果此时是 pulling 状态，则转化为 normal 状态（即下拉头回退）
             if (_currentState == GFPullToRefreshStatePulling) {
                 self.state = GFPullToRefreshStateNormal;
-                
             }
             
         }
         // 上拉头完全拖出的情况下
         else if (scrollViewContentOffsetY > (_offsetWhenScrollToBottom + GFPTR_HEIGHT)) {
-            // 如果此时是 normal 状态，且此时手指尚未松开，则转化为 pulling 状态，准备刷新
-            if (_currentState == GFPullToRefreshStateNormal && obj.isDragging) {
+            // 如果此时是 normal 状态，则转化为 pulling 状态，准备刷新
+            if (_currentState == GFPullToRefreshStateNormal && obj.dragging) {
                 self.state = GFPullToRefreshStatePulling;
-                
             }
-            // 如果此时是 pulling 状态，且此时已经松开手指，则转化为 refreshing 状态，开始刷新
-            else if (_currentState == GFPullToRefreshStatePulling && !obj.isDragging) {
+            // 如果此时是 pulling 状态，则转化为 refreshing 状态，开始刷新
+            else if (_currentState == GFPullToRefreshStatePulling && !obj.dragging) {
                 self.state = GFPullToRefreshStateRefreshing;
-                
             }
         }
         
@@ -95,11 +98,6 @@
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
     }
     
-}
-
-- (void)dealloc {
-    // 移除 KVO 监听
-    [_superview removeObserver:self forKeyPath:GFPTR_KVO_CONTENTFOFFSET context:nil];
 }
 
 // 更新上拉控件的frame
@@ -126,6 +124,7 @@
     }
 
 }
+
 
 
 #pragma mark - 刷新控件子部件初始化
@@ -170,7 +169,6 @@
 
     }
     
-    
     switch (state) {
             
         case GFPullToRefreshStateNormal:
@@ -194,23 +192,35 @@
 }
 
 - (void)stateNormalAction {
-    [_activityIndicatorView stopAnimating];
-    _arrowImageView.hidden = NO;
     _stateLabel.text = GFPTR_TEXT_PULLTOREFRESH;
     
-    // 只有之前箭头朝下，此时才需要将箭头旋转180度使之朝上
-    if (!_arrowUp) {
-        [UIView animateWithDuration:GFPTR_ARROW_DURATION animations:^{
-            _arrowImageView.transform = CGAffineTransformRotate(_arrowImageView.transform, GFPTR_PI);
-        }];
-        _arrowUp = YES;
-    }
-    
-    // 只有从 refreshing 状态转为 normal 状态，才需要改变 contentInset
+    // 表示从 refreshing 状态转为 normal 状态
     if (_superview.contentInset.bottom != _superViewContentInset.bottom) {
+        
+        [_activityIndicatorView stopAnimating];
+        _arrowImageView.hidden = NO;
+        
+        // 只有之前箭头朝上，此时才需要将箭头旋转180度使之朝下
+        if (!_arrowUp) {
+            _arrowImageView.transform = CGAffineTransformRotate(_arrowImageView.transform, GFPTR_PI);
+            _arrowUp = YES;
+        }
+        
+        // 改变 contentInset
         [UIView animateWithDuration:GFPTR_INSET_DURATION animations:^{
             _superview.contentInset = UIEdgeInsetsMake(_superview.contentInset.top, _superview.contentInset.left, _superview.contentInset.bottom - GFPTR_HEIGHT, _superview.contentInset.right);
         }];
+    }
+    // 表示从 pulling 状态转为 normal 状态
+    else {
+        // 只有之前箭头朝下，此时才需要将箭头旋转180度使之朝上
+        if (!_arrowUp) {
+            // 此处需要动画过度
+            [UIView animateWithDuration:GFPTR_ARROW_DURATION animations:^{
+                _arrowImageView.transform = CGAffineTransformRotate(_arrowImageView.transform, GFPTR_PI);
+            }];
+            _arrowUp = YES;
+        }
     }
 
 }

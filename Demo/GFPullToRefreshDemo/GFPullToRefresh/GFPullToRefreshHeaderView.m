@@ -10,16 +10,16 @@
 
 @interface GFPullToRefreshHeaderView()
 
-@property (nonatomic, strong) UIScrollView *superview; // 将要添加到的父view
-@property (nonatomic, strong) UIActivityIndicatorView *activityIndicatorView; // 小菊花
-@property (nonatomic, strong) UIImageView *arrowImageView; // 下拉箭头
-@property (nonatomic, strong) UILabel *stateLabel; // 显示状态文字
-@property (nonatomic, strong) UILabel *lastUpdateLabel; // 显示“最近更新”文字
-@property (nonatomic, strong) NSString *lastUpdateTime; // 最近更新的时间字符串
-@property (nonatomic, assign) UIEdgeInsets superViewContentInset; // 父view正常状态下的 contentInset  ps：下面使用的_superview.contentInset是实时值
-@property (nonatomic, assign) GFPullToRefreshState state; // 当前状态，用来引出动作
-@property (nonatomic, assign) GFPullToRefreshState currentState; // 当前状态，用来判断
-@property (nonatomic, assign) BOOL arrowUp; // 判断箭头是否朝上
+@property (nonatomic, strong) UIScrollView *superview; //!< 将要添加到的父View
+@property (nonatomic, strong) UIActivityIndicatorView *activityIndicatorView; //!< 小菊花
+@property (nonatomic, strong) UIImageView *arrowImageView; ///!< 下拉箭头
+@property (nonatomic, strong) UILabel *stateLabel; //!< 显示状态文字
+@property (nonatomic, strong) UILabel *lastUpdateLabel; //!< 显示“最近更新”文字
+@property (nonatomic, strong) NSString *lastUpdateTime; //!< 最近更新的时间字符串
+@property (nonatomic, assign) UIEdgeInsets superViewContentInset; //!< 父view正常状态下的 contentInset
+@property (nonatomic, assign) GFPullToRefreshState state; //!< 当前状态，用来引出动作
+@property (nonatomic, assign) GFPullToRefreshState currentState; //!< 当前状态，用来判断
+@property (nonatomic, assign) BOOL arrowUp; //!< 判断箭头是否朝上
 
 @end
 
@@ -59,6 +59,11 @@
     [newSuperview addObserver:self forKeyPath:GFPTR_KVO_CONTENTFOFFSET options:NSKeyValueObservingOptionNew context:nil];
 }
 
+- (void)dealloc {
+    // 移除 KVO 监听
+    [_superview removeObserver:self forKeyPath:GFPTR_KVO_CONTENTFOFFSET context:nil];
+}
+
 - (void)observeValueForKeyPath:(NSString *)keyPath
                       ofObject:(id)object
                         change:(NSDictionary *)change
@@ -69,36 +74,37 @@
         // 取得被观察者的对象 contentOffset 属性
         UIScrollView *obj = (UIScrollView *)object;
         CGFloat scrollViewContentOffsetY = obj.contentOffset.y;
+    
         
         // 下拉判断逻辑，要比较下拉时 contentOffset 的高度与正常状况下 contentInset 的相对高度
         // 要从 normal 状态进入 refreshing 状态必须要经过 pulling 状态
-        // 刚拉出下拉头的时候先更新“最后更新时间”
-        if (scrollViewContentOffsetY < - _superViewContentInset.top && scrollViewContentOffsetY >= (- _superViewContentInset.top - 5)) {
-            [self lastUpdateTimeToString];
-            if (_lastUpdateTime) {
-                _lastUpdateLabel.text = [NSString stringWithFormat:@"最后更新： %@",_lastUpdateTime];
-            }
-        }
+        
         // 下拉头没有完全拖出的情况下
-        else if (scrollViewContentOffsetY >= (- _superViewContentInset.top - GFPTR_HEIGHT)) {
+        if ((scrollViewContentOffsetY >= (- _superViewContentInset.top - GFPTR_HEIGHT)) && (scrollViewContentOffsetY < - _superViewContentInset.top)) {
+            
+            // 刚拉出下拉头的时候先更新“最后更新时间”
+            if (scrollViewContentOffsetY >= (- _superViewContentInset.top - 10)) {
+                [self lastUpdateTimeToString];
+                if (_lastUpdateTime) {
+                    _lastUpdateLabel.text = [NSString stringWithFormat:@"最后更新： %@",_lastUpdateTime];
+                }
+            }
+            
             // 如果此时是 pulling 状态，则转化为 normal 状态（即下拉头回退）
             if (_currentState == GFPullToRefreshStatePulling) {
                 self.state = GFPullToRefreshStateNormal;
-                
             }
             
         }
         // 下拉头完全拖出的情况下
         else if (scrollViewContentOffsetY < (-_superViewContentInset.top - GFPTR_HEIGHT)) {
-            // 如果此时是 normal 状态，且此时手指尚未松开，则转化为 pulling 状态，准备刷新
-            if (_currentState == GFPullToRefreshStateNormal && obj.isDragging) {
+            // 如果此时是 normal 状态，则转化为 pulling 状态，准备刷新
+            if (_currentState == GFPullToRefreshStateNormal && obj.dragging) {
                 self.state = GFPullToRefreshStatePulling;
-                
             }
-            // 如果此时是 pulling 状态，且此时已经松开手指，则转化为 refreshing 状态，开始刷新
-            else if (_currentState == GFPullToRefreshStatePulling && !obj.isDragging) {
+            // 如果此时是 pulling 状态，则转化为 refreshing 状态，开始刷新
+            else if (_currentState == GFPullToRefreshStatePulling && !obj.dragging) {
                 self.state = GFPullToRefreshStateRefreshing;
-                
             }
         }
         
@@ -108,10 +114,6 @@
     
 }
 
-- (void)dealloc {
-    // 移除 KVO 监听
-    [_superview removeObserver:self forKeyPath:GFPTR_KVO_CONTENTFOFFSET context:nil];
-}
 
 
 #pragma mark - 刷新控件子部件初始化
@@ -140,7 +142,7 @@
 
 - (void)initArrowImageView {
     _arrowImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"GFPullToRefreshArrow"]];
-    _arrowImageView.center = CGPointMake(self.center.x - 0.25 * self.frame.size.width, self.center.y + GFPTR_HEIGHT);
+    _arrowImageView.center = CGPointMake(self.center.x - 0.28 * self.frame.size.width, self.center.y + GFPTR_HEIGHT);
     
     [self addSubview:_arrowImageView];
 }
@@ -148,7 +150,7 @@
 - (void)initActivityIndicatorView {
     _activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     _activityIndicatorView.frame = CGRectMake(0, 0, 20, 20);
-    _activityIndicatorView.center = CGPointMake(self.center.x - 0.25 * self.frame.size.width, self.center.y + GFPTR_HEIGHT);
+    _activityIndicatorView.center = CGPointMake(self.center.x - 0.28 * self.frame.size.width, self.center.y + GFPTR_HEIGHT);
     _activityIndicatorView.hidesWhenStopped = YES;
     
     [self addSubview:_activityIndicatorView];
@@ -157,7 +159,11 @@
 
 #pragma mark - 设置不同状态，响应对应的 Actions
 
-// 设置状态并进行相应处理
+/**
+ *  设置状态并进行相应处理
+ *
+ *  @param state 当前要设置的状态
+ */
 - (void)setState:(GFPullToRefreshState)state {
     
     // 得到父view正常状况（即非 refreshing 状态）下的 contentInset
@@ -188,25 +194,36 @@
 }
 
 - (void)stateNormalAction {
-    [_activityIndicatorView stopAnimating];
-    _arrowImageView.hidden = NO;
     _stateLabel.text = GFPTR_TEXT_PULLTOREFRESH;
     
-    // 只有之前箭头朝上，此时才需要将箭头旋转180度使之朝下
-    if (_arrowUp) {
-        [UIView animateWithDuration:GFPTR_ARROW_DURATION animations:^{
-            _arrowImageView.transform = CGAffineTransformRotate(_arrowImageView.transform, GFPTR_PI);
-        }];
-        _arrowUp = NO;
-    }
-    
-    // 只有从 refreshing 状态转为 normal 状态，才需要改变 contentInset
+    // 表示从 refreshing 状态转为 normal 状态
     if (_superview.contentInset.top != _superViewContentInset.top) {
+        
+        [_activityIndicatorView stopAnimating];
+        _arrowImageView.hidden = NO;
+        
+        // 只有之前箭头朝上，此时才需要将箭头旋转180度使之朝下
+        if (_arrowUp) {
+            _arrowImageView.transform = CGAffineTransformRotate(_arrowImageView.transform, GFPTR_PI);
+            _arrowUp = NO;
+        }
+        
+        // 改变 contentInset
         [UIView animateWithDuration:GFPTR_INSET_DURATION animations:^{
             _superview.contentInset = UIEdgeInsetsMake(_superview.contentInset.top - GFPTR_HEIGHT, _superview.contentInset.left, _superview.contentInset.bottom, _superview.contentInset.right);
         }];
     }
-    
+    // 表示从 pulling 状态转为 normal 状态
+    else {
+        // 只有之前箭头朝上，此时才需要将箭头旋转180度使之朝下
+        if (_arrowUp) {
+            // 此处需要动画过度
+            [UIView animateWithDuration:GFPTR_ARROW_DURATION animations:^{
+                _arrowImageView.transform = CGAffineTransformRotate(_arrowImageView.transform, GFPTR_PI);
+            }];
+            _arrowUp = NO;
+        }
+    }
 }
 
 - (void)statePullingAction {
@@ -245,19 +262,23 @@
 
 }
 
+/**
+ *  持久化当前时间作为下次的最后更新时间
+ */
 - (void)updateRefreshTime {
-    // 持久化当前时间作为下次的最后更新时间
     NSDate *date = [NSDate date];
     [[NSUserDefaults standardUserDefaults] setObject:date forKey:GFPTR_NSUD_LASTUPDATETIME];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
+/**
+ *  格式化最后更新时间用以显示
+ */
 - (void)lastUpdateTimeToString {
     // 获取前一次存档的时间
     NSDate *lastTime = [[NSUserDefaults standardUserDefaults] objectForKey:GFPTR_NSUD_LASTUPDATETIME];
     // 获取当前时间
     NSDate *currentTime = [NSDate date];
-    
     
     if (lastTime) {
         
@@ -288,5 +309,7 @@
     }
     
 }
+
+
 
 @end

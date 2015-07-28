@@ -13,13 +13,13 @@
 
 @interface UIScrollView ()
 
-@property (nonatomic, strong) GFPullToRefreshHeaderView *header; // 下拉刷新控件
-@property (nonatomic, strong) GFPullToRefreshFooterView *footer; // 上拉刷新控件
+@property (nonatomic, strong) GFPullToRefreshHeaderView *header; //!< 下拉刷新控件
+@property (nonatomic, strong) GFPullToRefreshFooterView *footer; //!< 上拉刷新控件
 
 @end
 
-@implementation UIScrollView (GFPullToRefresh)
 
+@implementation UIScrollView (GFPullToRefresh)
 
 #pragma mark - 为 UIScrollView 动态添加属性
 
