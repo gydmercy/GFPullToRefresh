@@ -12,7 +12,7 @@ GFPullToRefresh is available on [CocoaPods](https://cocoapods.org/). Just add th
 
 ## Usage
 
-1、Including the header file
+1、Import header file
 
 	#import GFPullToRefresh.h
 
