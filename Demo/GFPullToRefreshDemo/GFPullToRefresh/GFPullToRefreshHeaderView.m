@@ -29,22 +29,29 @@
 
 #pragma mark - 初始化刷新头，设置KVO
 
+- (instancetype)init {
+    if (self = [super init]) {
+        _stateLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        _lastUpdateLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        _arrowImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"GFPullToRefreshArrow"]];
+        _activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        
+        [self addSubview:_stateLabel];
+        [self addSubview:_lastUpdateLabel];
+        [self addSubview:_arrowImageView];
+        [self addSubview:_activityIndicatorView];
+    }
+    return self;
+}
+
+
 - (void)willMoveToSuperview:(UIView *)newSuperview {
     _superview = (UIScrollView *)newSuperview;
-    
-    // 根据 superview 来确定刷新控件 frame
-    self.frame = CGRectMake(0,  - GFPTR_HEIGHT, _superview.frame.size.width, GFPTR_HEIGHT);
-    self.backgroundColor = [UIColor clearColor];
-    
-    [self initStateLabel];
-    [self initLastUpdateLabel];
-    [self initArrowImageView];
-    [self initActivityIndicatorView];
     
     // 设置属性默认值
     _state = GFPullToRefreshStateNormal;
     _currentState = GFPullToRefreshStateNormal;
-    _stateLabel.text = GFPTR_TEXT_PULLTOREFRESH;
+    _stateLabel.text = GFPTR_TEXT_PULLDOWNTOREFRESH;
     _superViewContentInset = _superview.contentInset;
     _arrowUp = NO;
     
@@ -57,6 +64,20 @@
     
     // 注册 KVO 监听 ScrollView 的 contentOffset 属性
     [newSuperview addObserver:self forKeyPath:GFPTR_KVO_CONTENTFOFFSET options:NSKeyValueObservingOptionNew context:nil];
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+
+    // 根据 superview 来确定刷新控件 frame
+    self.frame = CGRectMake(0,  - GFPTR_HEIGHT, _superview.frame.size.width, GFPTR_HEIGHT);
+    self.backgroundColor = [UIColor clearColor];
+    
+    [self setupStateLabel];
+    [self setupLastUpdateLabel];
+    [self setupArrowImageView];
+    [self setupActivityIndicatorView];
+    
 }
 
 - (void)dealloc {
@@ -116,44 +137,34 @@
 
 
 
-#pragma mark - 刷新控件子部件初始化
+#pragma mark - 配置刷新控件子部件
 
-- (void)initStateLabel {
-    _stateLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.08 * GFPTR_HEIGHT, 0.5 * self.frame.size.width, 0.25 * GFPTR_HEIGHT)];
-    _stateLabel.center = CGPointMake(self.center.x, _stateLabel.center.y);
+- (void)setupStateLabel {
+    _stateLabel.frame = CGRectMake(0, 0.08 * GFPTR_HEIGHT, 0.5 * self.frame.size.width, 0.25 * GFPTR_HEIGHT);
+    _stateLabel.center = CGPointMake(0.5 * self.frame.size.width, _stateLabel.center.y);
     _stateLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     _stateLabel.textAlignment = NSTextAlignmentCenter;
     _stateLabel.textColor = GFPTR_TEXT_COLOR;
     _stateLabel.font = [UIFont boldSystemFontOfSize:13];
-    
-    [self addSubview:_stateLabel];
 }
 
-- (void)initLastUpdateLabel {
-    _lastUpdateLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.55 * GFPTR_HEIGHT, 0.5 * self.frame.size.width, 0.25 * GFPTR_HEIGHT)];
-    _lastUpdateLabel.center = CGPointMake(self.center.x, _lastUpdateLabel.center.y);
+- (void)setupLastUpdateLabel {
+    _lastUpdateLabel.frame = CGRectMake(0, 0.55 * GFPTR_HEIGHT, 0.5 * self.frame.size.width, 0.25 * GFPTR_HEIGHT);
+    _lastUpdateLabel.center = CGPointMake(0.5 * self.frame.size.width, _lastUpdateLabel.center.y);
     _lastUpdateLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     _lastUpdateLabel.textAlignment = NSTextAlignmentCenter;
     _lastUpdateLabel.textColor = GFPTR_TEXT_COLOR;
     _lastUpdateLabel.font = [UIFont boldSystemFontOfSize:12];
-    
-    [self addSubview:_lastUpdateLabel];
 }
 
-- (void)initArrowImageView {
-    _arrowImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"GFPullToRefreshArrow"]];
-    _arrowImageView.center = CGPointMake(self.center.x - 0.28 * self.frame.size.width, self.center.y + GFPTR_HEIGHT);
-    
-    [self addSubview:_arrowImageView];
+- (void)setupArrowImageView {
+    _arrowImageView.center = CGPointMake(0.22 * self.frame.size.width, 0.5 * self.frame.size.height);
 }
 
-- (void)initActivityIndicatorView {
-    _activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+- (void)setupActivityIndicatorView {
     _activityIndicatorView.frame = CGRectMake(0, 0, 20, 20);
-    _activityIndicatorView.center = CGPointMake(self.center.x - 0.28 * self.frame.size.width, self.center.y + GFPTR_HEIGHT);
+    _activityIndicatorView.center = CGPointMake(0.22 * self.frame.size.width, 0.5 * self.frame.size.height);
     _activityIndicatorView.hidesWhenStopped = YES;
-    
-    [self addSubview:_activityIndicatorView];
 }
 
 
@@ -194,7 +205,7 @@
 }
 
 - (void)stateNormalAction {
-    _stateLabel.text = GFPTR_TEXT_PULLTOREFRESH;
+    _stateLabel.text = GFPTR_TEXT_PULLDOWNTOREFRESH;
     
     // 表示从 refreshing 状态转为 normal 状态
     if (_superview.contentInset.top != _superViewContentInset.top) {

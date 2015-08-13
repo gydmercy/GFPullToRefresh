@@ -48,6 +48,7 @@ static NSString *const cellIdentifier = @"cellIdentifier";
 - (UITableView *)tableView {
     if (!_tableView) {
         _tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
+        _tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         _tableView.tableFooterView = [[UIView alloc] init];
         _tableView.dataSource = self;
         [_tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:cellIdentifier];
@@ -105,6 +106,7 @@ static NSString *const cellIdentifier = @"cellIdentifier";
     
     return cell;
 }
+
 
 
 @end

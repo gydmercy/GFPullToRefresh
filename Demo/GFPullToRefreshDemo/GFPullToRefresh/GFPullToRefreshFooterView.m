@@ -28,27 +28,49 @@
 
 #pragma mark - 初始化刷新头，设置KVO
 
+- (instancetype)init {
+    if (self = [super init]) {
+        _stateLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+        _arrowImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"GFPullToRefreshArrow"]];
+        _activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        
+        [self addSubview:_stateLabel];
+        [self addSubview:_arrowImageView];
+        [self addSubview:_activityIndicatorView];
+    }
+    return self;
+}
+
 - (void)willMoveToSuperview:(UIView *)newSuperview {
     _superview = (UIScrollView *)newSuperview;
     
+//    CGFloat scrollViewHeight = _superview.frame.size.height - _superview.contentInset.top - _superview.contentInset.bottom;
+    
     // 根据 superview 来确定刷新控件 frame
     self.frame = CGRectMake(0, _superview.contentSize.height, _superview.frame.size.width, GFPTR_HEIGHT);
+//    self.frame = CGRectMake(0, scrollViewHeight, _superview.frame.size.width, GFPTR_HEIGHT);
     self.backgroundColor = [UIColor clearColor];
-    
-    [self initStateLabel];
-    [self initArrowImageView];
-    [self initActivityIndicatorView];
     
     // 设置属性默认值
     _state = GFPullToRefreshStateNormal;
     _currentState = GFPullToRefreshStateNormal;
-    _stateLabel.text = GFPTR_TEXT_PULLTOREFRESH;
+    _stateLabel.text = GFPTR_TEXT_PULLUPTOREFRESH;
     _superViewContentInset = _superview.contentInset;
     _arrowImageView.transform = CGAffineTransformRotate(_arrowImageView.transform, GFPTR_PI);
     _arrowUp = YES;
     
     // 注册 KVO 监听 ScrollView 的 contentOffset 属性
     [newSuperview addObserver:self forKeyPath:GFPTR_KVO_CONTENTFOFFSET options:NSKeyValueObservingOptionNew context:nil];
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+
+    [self adjustSelfViewFrame];
+    
+    [self setupStateLabel];
+    [self setupArrowImageView];
+    [self setupActivityIndicatorView];
 }
 
 - (void)dealloc {
@@ -73,7 +95,7 @@
         
         // 下拉判断逻辑，要比较上拉时 contentOffset 的高度与正常状况下 拉到内容底时的 contentOffset
         // 要从 normal 状态进入 refreshing 状态必须要经过 pulling 状态
-
+        
         // 上拉头没有完全拖出的情况下
         if (scrollViewContentOffsetY > _offsetWhenScrollToBottom && scrollViewContentOffsetY <= (_offsetWhenScrollToBottom + GFPTR_HEIGHT)) {
             // 如果此时是 pulling 状态，则转化为 normal 状态（即下拉头回退）
@@ -122,38 +144,30 @@
     } else  {
         _offsetWhenScrollToBottom = _superview.contentSize.height - (_superview.frame.size.height - _superview.contentInset.bottom);
     }
-
+    
 }
 
 
 
 #pragma mark - 刷新控件子部件初始化
 
-- (void)initStateLabel {
-    _stateLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0.08 * GFPTR_HEIGHT, 0.5 * self.frame.size.width, 0.25 * GFPTR_HEIGHT)];
-    _stateLabel.center = self.center;
+- (void)setupStateLabel {
+    _stateLabel.frame = CGRectMake(0, 0, 0.5 * self.frame.size.width, 0.25 * GFPTR_HEIGHT);
+    _stateLabel.center = CGPointMake(0.5 * self.frame.size.width, 0.5 * self.frame.size.height);
     _stateLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     _stateLabel.textAlignment = NSTextAlignmentCenter;
     _stateLabel.textColor = GFPTR_TEXT_COLOR;
     _stateLabel.font = [UIFont boldSystemFontOfSize:13];
-    
-    [self addSubview:_stateLabel];
 }
 
-- (void)initArrowImageView {
-    _arrowImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"GFPullToRefreshArrow"]];
-    _arrowImageView.center = CGPointMake(self.center.x - 0.25 * self.frame.size.width, self.center.y);
-    
-    [self addSubview:_arrowImageView];
+- (void)setupArrowImageView {
+    _arrowImageView.center = CGPointMake(0.25 * self.frame.size.width, 0.5 * self.frame.size.height);
 }
 
-- (void)initActivityIndicatorView {
-    _activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+- (void)setupActivityIndicatorView {
     _activityIndicatorView.frame = CGRectMake(0, 0, 20, 20);
-    _activityIndicatorView.center = CGPointMake(self.center.x - 0.25 * self.frame.size.width, self.center.y);
+    _activityIndicatorView.center = CGPointMake(0.25 * self.frame.size.width, 0.5 * self.frame.size.height);
     _activityIndicatorView.hidesWhenStopped = YES;
-    
-    [self addSubview:_activityIndicatorView];
 }
 
 
@@ -161,12 +175,12 @@
 #pragma mark - 设置不同状态，响应对应的 Actions
 
 // 设置状态并进行相应处理
-- (void)setState:(GFPullToRefreshState)state {    
+- (void)setState:(GFPullToRefreshState)state {
     
     // 得到父view正常状况（即非 refreshing 状态）下的 contentInset
     if (_state != GFPullToRefreshStateRefreshing) {
         _superViewContentInset.bottom = _superview.contentInset.bottom;
-
+        
     }
     
     switch (state) {
@@ -192,7 +206,7 @@
 }
 
 - (void)stateNormalAction {
-    _stateLabel.text = GFPTR_TEXT_PULLTOREFRESH;
+    _stateLabel.text = GFPTR_TEXT_PULLUPTOREFRESH;
     
     // 表示从 refreshing 状态转为 normal 状态
     if (_superview.contentInset.bottom != _superViewContentInset.bottom) {
@@ -222,7 +236,7 @@
             _arrowUp = YES;
         }
     }
-
+    
 }
 
 - (void)statePullingAction {
