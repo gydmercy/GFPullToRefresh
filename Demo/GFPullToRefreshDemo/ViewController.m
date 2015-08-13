@@ -50,6 +50,7 @@ static NSString *const cellIdentifier = @"cellIdentifier";
         _tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
         _tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         _tableView.tableFooterView = [[UIView alloc] init];
+//        _tableView.contentInset = UIEdgeInsetsMake(0, 0, 64, 0);
         _tableView.dataSource = self;
         [_tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:cellIdentifier];
         [self.view addSubview:_tableView];
@@ -103,7 +104,7 @@ static NSString *const cellIdentifier = @"cellIdentifier";
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier forIndexPath:indexPath];
     cell.textLabel.text = [NSString stringWithFormat:@"%ld", (long)indexPath.row];
-    
+//    cell.contentView.backgroundColor = [UIColor redColor];
     return cell;
 }
 

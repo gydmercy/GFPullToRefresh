@@ -44,11 +44,9 @@
 - (void)willMoveToSuperview:(UIView *)newSuperview {
     _superview = (UIScrollView *)newSuperview;
     
-//    CGFloat scrollViewHeight = _superview.frame.size.height - _superview.contentInset.top - _superview.contentInset.bottom;
-    
     // 根据 superview 来确定刷新控件 frame
-    self.frame = CGRectMake(0, _superview.contentSize.height, _superview.frame.size.width, GFPTR_HEIGHT);
-//    self.frame = CGRectMake(0, scrollViewHeight, _superview.frame.size.width, GFPTR_HEIGHT);
+    CGFloat scrollViewHeight = _superview.frame.size.height - _superview.contentInset.top - _superview.contentInset.bottom;
+    self.frame = CGRectMake(0, scrollViewHeight, _superview.frame.size.width, GFPTR_HEIGHT);
     self.backgroundColor = [UIColor clearColor];
     
     // 设置属性默认值
@@ -149,7 +147,7 @@
 
 
 
-#pragma mark - 刷新控件子部件初始化
+#pragma mark - 配置刷新控件子部件
 
 - (void)setupStateLabel {
     _stateLabel.frame = CGRectMake(0, 0, 0.5 * self.frame.size.width, 0.25 * GFPTR_HEIGHT);
@@ -179,7 +177,7 @@
     
     // 得到父view正常状况（即非 refreshing 状态）下的 contentInset
     if (_state != GFPullToRefreshStateRefreshing) {
-        _superViewContentInset.bottom = _superview.contentInset.bottom;
+        _superViewContentInset = _superview.contentInset;
         
     }
     
@@ -222,14 +220,14 @@
         
         // 改变 contentInset
         [UIView animateWithDuration:GFPTR_INSET_DURATION animations:^{
-            _superview.contentInset = UIEdgeInsetsMake(_superview.contentInset.top, _superview.contentInset.left, _superview.contentInset.bottom - GFPTR_HEIGHT, _superview.contentInset.right);
+            _superview.contentInset = _superViewContentInset;
         }];
     }
     // 表示从 pulling 状态转为 normal 状态
     else {
         // 只有之前箭头朝下，此时才需要将箭头旋转180度使之朝上
         if (!_arrowUp) {
-            // 此处需要动画过度
+            // 此处需要动画过渡
             [UIView animateWithDuration:GFPTR_ARROW_DURATION animations:^{
                 _arrowImageView.transform = CGAffineTransformRotate(_arrowImageView.transform, GFPTR_PI);
             }];

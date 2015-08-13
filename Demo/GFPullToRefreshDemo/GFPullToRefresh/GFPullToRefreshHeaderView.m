@@ -219,16 +219,16 @@
             _arrowUp = NO;
         }
         
-        // 改变 contentInset
+        // 恢复 contentInset
         [UIView animateWithDuration:GFPTR_INSET_DURATION animations:^{
-            _superview.contentInset = UIEdgeInsetsMake(_superview.contentInset.top - GFPTR_HEIGHT, _superview.contentInset.left, _superview.contentInset.bottom, _superview.contentInset.right);
+            _superview.contentInset = _superViewContentInset;
         }];
     }
     // 表示从 pulling 状态转为 normal 状态
     else {
         // 只有之前箭头朝上，此时才需要将箭头旋转180度使之朝下
         if (_arrowUp) {
-            // 此处需要动画过度
+            // 此处需要动画过渡
             [UIView animateWithDuration:GFPTR_ARROW_DURATION animations:^{
                 _arrowImageView.transform = CGAffineTransformRotate(_arrowImageView.transform, GFPTR_PI);
             }];
