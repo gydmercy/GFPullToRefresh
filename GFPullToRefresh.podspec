@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name         = "GFPullToRefresh"
-  s.version      = "1.0.0"
-  s.summary      = "a simple and low coupling pull-to-refresh module, easy to use"
+  s.version      = "1.1.0"
+  s.summary      = "a simple and low coupling pull-to-refresh module, very easy to use"
   s.homepage     = "https://github.com/gydmercy/GFPullToRefresh"
   s.license      = "MIT"
   s.author       = { "Mercy" => "bluegyd@vip.qq.com" }
