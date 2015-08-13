@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
+
 #define GFPTR_TEXT_COLOR [UIColor colorWithRed:126.0f / 255 green:126.0f / 255 blue:126.0f / 255 alpha:1.0f]
 
 
@@ -26,6 +27,7 @@ extern NSString *const GFPTR_KVO_CONTENTFOFFSET; //!< KVO 监听的 contentOffse
 extern NSString *const GFPTR_NSUD_LASTUPDATETIME; //!< NSUserDefaults 存储最近更新时间
 
 // 刷新控件显示的文字
-extern NSString *const GFPTR_TEXT_PULLTOREFRESH; //<! "下拉可以刷新"
+extern NSString *const GFPTR_TEXT_PULLDOWNTOREFRESH; //<! "下拉可以刷新"
+extern NSString *const GFPTR_TEXT_PULLUPTOREFRESH; //<! "上拉可以刷新"
 extern NSString *const GFPTR_TEXT_RELEASTTOREFRESH; //!< "松开立即刷新"
 extern NSString *const GFPTR_TEXT_REFRESHING; //<! "正在刷新..."
