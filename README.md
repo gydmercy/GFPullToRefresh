@@ -3,6 +3,10 @@
 
 GFPullToRefresh is a simple and low coupling pull-to-refresh module, very easy to use.
 
+## Screenshots
+
+![](http://7xjlak.com1.z0.glb.clouddn.com/iosgifGFPullToRefresh_GIF.gif)
+
 ## Installation
 
 GFPullToRefresh is available on [CocoaPods](https://cocoapods.org/). Just add the following to your project Podfile:
